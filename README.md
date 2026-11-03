@@ -1,25 +1,23 @@
 # prettier-plugin-markdown-table-layout
 
-Prettier plugin for compact and single-spaced markdown tables with configurable separators.
+a prettier plugin for markdown tables that stay compact and readable. choose how cells are spaced and how separators are sized, without padding every column to fit its longest value.
 
-This [fork](https://github.com/luuuuuqui/prettier-plugin-markdown-table-layout) of [myl7/prettier-plugin-compact-markdown-table](https://github.com/myl7/prettier-plugin-compact-markdown-table) adds single-spaced layouts. The existing `compact` default and `aligned` layout are unchanged.
+## features
 
-Resolves [prettier/prettier#12074](https://github.com/prettier/prettier/issues/12074), [prettier/prettier#14722](https://github.com/prettier/prettier/issues/14722), [prettier/prettier#16954](https://github.com/prettier/prettier/issues/16954).
+- **compact, but readable**: keep one space around cell content without adding extra padding to align the pipes.
+- **fit character limits**: remove alignment padding to leave more room for content in documents with strict character budgets.
+- **control your separators**: use a fixed number of hyphens, match each header's width, or keep the existing hyphen counts.
+- **keep diffs focused**: in the single-spaced layouts, editing a body cell does not change the padding or separators in other rows.
+- **preserve column alignment**: keep left, center, right, and unspecified alignment in every layout.
+- **keep your prettier workflow**: format prose and inline markdown as usual, honor `prettier-ignore`, and preserve markdown code examples by default in the single-spaced layouts.
 
-## Features
+## requirements
 
-- **Compact tables**: Strip all whitespace padding or alignment and reduce separators for table cells.
-- **Single-spaced tables**: Keep one space around content with fixed, header-sized, or preserved separators, without padding columns to match body cells.
-- **Save LLM tokens**: A 5-column, 10-row table saves ~21% of table tokens and ~32% of characters with compact formatting.
-- **Fit character limits**: Useful for submissions with strict character budgets, e.g., OpenReview rebuttals capped at 5000 characters.
+- prettier 3.0.0 or later within version 3 (`^3.0.0`).
 
-## Prerequisites
+## installation
 
-- Prettier >= 3.0.0
-
-## Get Started
-
-Install this fork alongside Prettier:
+install the plugin from this repository alongside prettier:
 
 ```sh
 # npm
@@ -29,7 +27,9 @@ npm install -D prettier github:luuuuuqui/prettier-plugin-markdown-table-layout
 pnpm add -D prettier github:luuuuuqui/prettier-plugin-markdown-table-layout
 ```
 
-Add the plugin to your `.prettierrc`:
+## quick start
+
+add the plugin to your `.prettierrc` for compact tables with a single space around each cell:
 
 ```json
 {
@@ -37,63 +37,51 @@ Add the plugin to your `.prettierrc`:
 }
 ```
 
-Then format as usual:
+then format your markdown files:
 
 ```sh
 prettier --write "**/*.md"
 ```
 
-Before:
+before:
 
 ```md
-| Name  | Age | City |
+| name  | age | city |
 | ----- | --- | ---- |
-| Alice | 30  | NYC  |
-| Bob   | 25  | LA   |
+| alice | 30  | nyc  |
+| bob   | 25  | la   |
 ```
 
-After:
+after:
 
 ```md
-|Name|Age|City|
-|-|-|-|
-|Alice|30|NYC|
-|Bob|25|LA|
+| name | age | city |
+| --- | --- | --- |
+| alice | 30 | nyc |
+| bob | 25 | la |
 ```
 
-## Config
+the default layout is `fixed`, with three hyphens per separator and one space around cell content. existing column alignment is preserved: left-aligned columns use `:---`, right-aligned columns use `---:`, centered columns use `:---:`, and columns without explicit alignment use `---`. choose `compact` explicitly for separators with one hyphen and no spaces around cell content.
+
+## configuration
 
 ### `tableLayout`
 
-|Value|Description|
-|-|-|
-|`"compact"` (default)|No cell padding, minimal separators.|
-|`"aligned"`|Pad cells to align columns (Prettier default).|
-|`"fixed"`|Single-space padding, fixed separator hyphen count.|
-|`"header"`|Single-space padding, separators sized to formatted headers.|
-|`"preserve"`|Single-space padding, preserve each separator's hyphen count.|
+choose the table formatting style:
 
-Set in `.prettierrc`:
+| value | behavior |
+| :--- | :--- |
+| `"fixed"` (default) | single-space padding and a configurable number of separator hyphens. |
+| `"aligned"` | prettier's standard table formatting, with padding to align columns. |
+| `"header"` | single-space padding and separators sized to their headers. |
+| `"preserve"` | single-space padding while keeping each separator's original hyphen count. |
+| `"compact"` | no cell padding and one hyphen per separator, plus any alignment colons. |
 
-```json
-{
-  "tableLayout": "compact"
-}
-```
+the `fixed`, `header`, and `preserve` layouts never expand separators to fit body content or add spaces to line up body rows. nonempty cells have one space on each side; empty cells contain one space in total (`| |`). all layouts print leading and trailing pipes.
 
-Or pass via CLI:
+#### fixed separators
 
-```sh
-prettier --table-layout aligned --write "**/*.md"
-```
-
-### Single-spaced layouts
-
-The `fixed`, `header`, and `preserve` layouts put exactly one space before and after nonempty cell content. Empty cells contain one space in total (`| |`). They never add padding to align body rows, and body content never affects separator lengths. Left (`:---`), right (`---:`), center (`:---:`), and unspecified (`---`) alignment keep their meaning in all layouts.
-
-#### Fixed separators
-
-Set `tableLayout` to `"fixed"`:
+use `tableLayout: "fixed"` for uniform separator hyphen counts. `tableSeparatorLength` controls the number of hyphens in every column; it defaults to `3` and must be an integer of at least `1`. alignment colons are added to that count.
 
 ```json
 {
@@ -103,73 +91,77 @@ Set `tableLayout` to `"fixed"`:
 }
 ```
 
-Output:
-
 ```md
-| Date | Version | Description | Authors |
+| date | version | description | authors |
 | :--- | ---: | :---: | --- |
-| 2026-11-03 | 1.0 | Update documentation | Team |
+| 2026-11-03 | 1.0 | update documentation | team |
 ```
 
-`tableSeparatorLength` is an integer with default `3` and minimum `1`. It counts only hyphens, so alignment colons add to the separator's total width. Invalid lengths are rejected. This option only affects `fixed`; other layouts ignore it.
+this example uses left, right, center, and unspecified alignment. changing the separator length keeps those markers intact. `tableSeparatorLength` has no effect on other layouts.
 
-CLI equivalent:
+#### header-sized separators
 
-```sh
-prettier --table-layout fixed --table-separator-length 3 --write "**/*.md"
-```
-
-#### Header-sized separators
-
-Set `tableLayout` to `"header"`:
+use `tableLayout: "header"` to size each separator to its formatted header, counting alignment colons as part of the total width:
 
 ```md
-| Date | Version | Description | Authors |
+| date | version | description | authors |
 | :--: | :-----: | :---------: | :-----: |
-| 2026-11-03 | 1.0 | Update documentation | Team |
+| 2026-11-03 | 1.0 | update documentation | team |
 ```
 
-Separator width is `max(3, headerWidth)`, including alignment colons. There is always at least one hyphen: a short or empty header produces `---`, `:--`, `--:`, or `:-:` according to its alignment.
+the separator's width is `max(3, headerWidth)`, so even a short or empty header has a valid separator. depending on alignment, the minimum is `---`, `:--`, `--:`, or `:-:`.
 
-`headerWidth` uses Prettier's `util.getStringWidth` on the formatted Markdown source of the header, excluding the surrounding cell spaces. Accented letters occupy one position, combining accents do not add width, and wide characters such as CJK and emoji generally occupy two. Prettier handles emoji sequences. This measures source text, not rendered HTML: links include their destination and brackets, inline code includes backticks, emphasis includes its markers, and escaped pipes include the backslash. For example, `**bold**` has width `8`.
+header width comes from prettier's `util.getStringWidth`, measured on the formatted markdown source without surrounding cell spaces. accented letters occupy one position, combining accents do not add width, and wide characters such as cjk and emoji generally occupy two. emoji sequences follow prettier's width handling.
 
-#### Preserved separators
+this measures source text rather than rendered html. links include their brackets and destination, inline code includes backticks, emphasis includes its markers, and escaped pipes include the backslash. for example, `**bold**` has width `8`.
 
-Set `tableLayout` to `"preserve"`. Each column keeps its original number of hyphens while cell spacing is normalized.
+#### preserved separators
 
-Before:
+use `tableLayout: "preserve"` to normalize cell spacing while keeping each separator's original number of hyphens and alignment markers.
+
+before:
 
 ```md
-| Date       | Version    | Description             | Authors |
+| date       | version    | description             | authors |
 | :--: | :------: | :----: | :---: |
-| 2026-11-03 | 1.0        | Update documentation    | Team    |
+| 2026-11-03 | 1.0        | update documentation    | team    |
 ```
 
-After:
+after:
 
 ```md
-| Date | Version | Description | Authors |
+| date | version | description | authors |
 | :--: | :------: | :----: | :---: |
-| 2026-11-03 | 1.0 | Update documentation | Team |
+| 2026-11-03 | 1.0 | update documentation | team |
 ```
 
-Counts are read from each parsed table's original delimiter row. Tables with optional outer pipes, tables in lists and block quotes, and header-only tables are supported. Output uses leading and trailing pipes in every layout.
+counts come from each table's own delimiter row. header-only tables, optional outer pipes, and tables nested in lists or block quotes are supported.
 
-### Markdownlint compatibility
+#### compact and aligned layouts
 
-All three single-spaced layouts match [`MD060` with `style: "compact"`](https://github.com/DavidAnson/markdownlint/blob/main/doc/md060.md), including its single-space rule for empty cells. The plugin's older `compact` layout corresponds to markdownlint's `tight` style instead; the names differ.
+use `tableLayout: "compact"` for the smallest separators and no spaces around cell content:
 
-With `aligned_delimiter: true`, markdownlint additionally requires delimiter pipes to line up with header pipes. The `header` layout does this when headers are at least three positions wide; shorter headers need the minimum valid separator width. `fixed` and `preserve` do not guarantee delimiter alignment.
+```md
+| name | age | city |
+| --- | --- | --- |
+| alice | 30 | nyc |
+```
 
-### Other Markdown content
+becomes:
 
-Cells are printed by Prettier before the table layout is applied, preserving escaped pipes, inline code, and normal inline formatting. `prettier-ignore` comments and ignore ranges keep their usual behavior. Headings, prose, and other Markdown nodes still use Prettier's printer. Plain code blocks are not treated as tables.
+```md
+|name|age|city|
+|-|-|-|
+|alice|30|nyc|
+```
+
+use `tableLayout: "aligned"` to delegate table formatting to prettier's standard printer, including its normal behavior for `printWidth` and `proseWrap`.
 
 ### `preserveMarkdownCodeBlocks`
 
-Boolean, default `true`. In the `fixed`, `header`, and `preserve` layouts, keep Markdown code block content unchanged instead of formatting it as an embedded document. This includes Markdown and MDX language names, aliases such as `md` and `pandoc`, and extensions recognized by Prettier. Prettier still handles the outer fence and container indentation.
+boolean, default `true`. in the `fixed`, `header`, and `preserve` layouts, keep the contents of markdown code blocks unchanged instead of formatting them as embedded documents. markdown and mdx language names, aliases such as `md` and `pandoc`, and extensions recognized by prettier are included. prettier still handles outer fences, container indentation, and line endings.
 
-Set this option to `false` to format the examples with the selected table layout:
+set this option to `false` to format those examples with the selected table layout:
 
 ```json
 {
@@ -179,17 +171,41 @@ Set this option to `false` to format the examples with the selected table layout
 }
 ```
 
-CLI equivalent:
+this option does not change the existing behavior of `compact` or `aligned`. blocks in other languages still follow prettier. if `embeddedLanguageFormatting` is `"off"`, embedded formatting is disabled for all languages regardless of this option.
+
+### cli options
+
+the same options are available from the command line:
+
+```sh
+prettier --table-layout fixed --table-separator-length 3 --write "**/*.md"
+prettier --table-layout header --write "**/*.md"
+prettier --table-layout preserve --write "**/*.md"
+```
+
+to allow formatting inside markdown code blocks:
 
 ```sh
 prettier --table-layout header --no-preserve-markdown-code-blocks --write "**/*.md"
 ```
 
-This option does not change `compact` or `aligned`, which retain their existing embedded formatting behavior. Blocks in other languages still follow Prettier. Prettier's `embeddedLanguageFormatting: "off"` takes precedence and disables embedded formatting for all languages, even if this option is `false`.
+## compatibility
 
-### Development
+the plugin uses the [prettier 3 plugin api](https://prettier.io/blog/2023/07/05/3.0.0.html), including esm plugin loading and the `prettier/plugins/markdown` and `prettier/doc` module exports. its document builders, document printing utilities, `AstPath.node`, and `util.getStringWidth` are available in prettier 3.0.0, so no newer minimum is required.
 
-Use the existing development dependencies; no additional packages are required:
+the packaged plugin was installed in separate consumer projects and passed the full test suite with prettier 3.0.0 and 3.9.10. additional real-document validation covered prettier 3.9.6 and 3.9.8 on windows. these checks cover the listed versions rather than every release in the 3.x series.
+
+the plugin uses prettier's markdown parser and printer for cell contents and the rest of the document. escaped pipes and inline code are supported; emphasis, links, headings, and prose keep their normal prettier formatting. `prettier-ignore` comments and ignore ranges retain their usual behavior. the `markdown`, `mdx`, and `remark` parsers are supported.
+
+### markdownlint
+
+the `fixed`, `header`, and `preserve` layouts match [`MD060` with `style: "compact"`](https://github.com/DavidAnson/markdownlint/blob/main/doc/md060.md), including its spacing rule for empty cells. the plugin's `compact` layout corresponds to markdownlint's `tight` style instead.
+
+if `aligned_delimiter` is `true`, markdownlint also requires delimiter pipes to line up with the header pipes. the `header` layout meets this requirement when every header is at least three positions wide. shorter headers need wider separators to satisfy the minimum width. `fixed` and `preserve` do not guarantee delimiter alignment.
+
+## development
+
+install the existing development dependencies and run the checks:
 
 ```sh
 pnpm install --frozen-lockfile
@@ -197,12 +213,14 @@ pnpm test
 pnpm format:check
 ```
 
-The tests cover the existing layouts and all three new layouts, including formatting twice to check stability, alignment markers, source widths, escaped pipes, inline code, empty cells, ignore comments, and nested tables across the `markdown`, `mdx`, and `remark` parsers.
+`pnpm format:check` checks the javascript files in `src/` and `test/`, plus this readme and `package.json`, without changing them. it exits with an error if any file needs formatting. run `pnpm format` to format those same files.
 
-Markdownlint 0.42.0 was also run temporarily against 210 formatted outputs with `MD060: { "style": "compact" }`, including empty cells, Unicode, inline markup, and nested tables. All passed and remained stable on a second format. Markdownlint is not a project dependency.
+the test suite covers all five layouts, formatting stability, alignment markers, unicode widths, inline markdown, escaped pipes, empty cells, ignored content, nested tables, and configurable preservation of markdown code blocks. markdownlint compatibility was also checked with version 0.42.0; markdownlint is not a project dependency.
 
-## Licenses
+## credits and license
 
-Copyright (C) 2026 Yulong Ming <i@myl7.org>
+based on [myl7/prettier-plugin-compact-markdown-table](https://github.com/myl7/prettier-plugin-compact-markdown-table). the `compact` and `aligned` layouts retain their original behavior; this fork uses `fixed` as its default.
 
-Apache License, Version 2.0
+Copyright (C) 2026 Yulong Ming <i@myl7.org>.
+
+licensed under the [Apache License, Version 2.0](LICENSE.txt).
