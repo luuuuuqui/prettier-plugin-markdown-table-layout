@@ -213,7 +213,18 @@ pnpm test
 pnpm format:check
 ```
 
-`pnpm format:check` checks the javascript files in `src/` and `test/`, plus this readme and `package.json`, without changing them. it exits with an error if any file needs formatting. run `pnpm format` to format those same files.
+`pnpm format:check` checks the javascript files in `src/`, `test/`, and `scripts/`, workflow yaml files, this readme, and `package.json`, without changing them. it exits with an error if any file needs formatting. run `pnpm format` to format those same files.
+
+to test the package as a consumer, generate and install its tarball in a temporary project and run the full test suite against that installation:
+
+```sh
+npm run test:package -- 3.0.0
+npm run test:package -- 3
+```
+
+the first command tests the minimum supported prettier release; the second resolves the latest release within version 3. the check also verifies the package contents, loading the plugin by name from a prettier config, and the cli output. temporary files are removed after the check.
+
+the ci workflow runs on pushes and pull requests. it checks formatting and tests with the frozen lockfile, then validates the installed package against both prettier versions. markdownlint remains a local tool and is not part of ci.
 
 the test suite covers all five layouts, formatting stability, alignment markers, unicode widths, inline markdown, escaped pipes, empty cells, ignored content, nested tables, and configurable preservation of markdown code blocks. markdownlint compatibility was also checked with version 0.42.0; markdownlint is not a project dependency.
 

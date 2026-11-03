@@ -9,8 +9,9 @@
   ],
   "scripts": {
     "test": "vitest run",
-    "format": "prettier --write \"{src,test}/**/*.js\" README.md package.json",
-    "format:check": "prettier --check \"{src,test}/**/*.js\" README.md package.json"
+    "test:package": "node scripts/check-package.js",
+    "format": "prettier --write \"{src,test,scripts}/**/*.js\" \".github/workflows/*.yml\" README.md package.json",
+    "format:check": "prettier --check \"{src,test,scripts}/**/*.js\" \".github/workflows/*.yml\" README.md package.json"
   },
   "keywords": [
     "prettier-plugin",
