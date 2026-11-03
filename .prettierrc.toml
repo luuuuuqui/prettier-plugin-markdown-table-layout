@@ -2,6 +2,7 @@ tabWidth = 4
 printWidth = 100
 embeddedLanguageFormatting = "off"
 plugins = ['prettier-plugin-markdown-table-layout']
+tableLayout = "fixed"
 
 [[overrides]]
 files = ["*.yaml", "*.yml", "*.json", "*.toml"]

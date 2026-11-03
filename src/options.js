@@ -2,7 +2,7 @@ const options = {
     tableLayout: {
         type: "choice",
         category: "Markdown",
-        default: "compact",
+        default: "fixed",
         description: "Table formatting style.",
         choices: [
             { value: "compact", description: "No cell padding, minimal separators." },

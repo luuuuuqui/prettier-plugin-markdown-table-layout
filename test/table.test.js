@@ -6,6 +6,7 @@ async function format(input, options = {}) {
   return prettier.format(input, {
     parser: "markdown",
     plugins: [plugin],
+    tableLayout: "compact",
     ...options,
   });
 }

@@ -17,6 +17,19 @@ const example = `| Date       | Version    | Description             | Authors |
 | 2026-11-03 | 1.0        | Update documentation    | Team    |
 `;
 
+test.each(parsers)("%s uses fixed separators by default", async (parser) => {
+    const input =
+        "| left | right | center | none |\n| :------ | ------: | :------: | ------ |\n| text | 1 | value | data |\n";
+    expect(await format(input, { parser })).toBe(
+        "| left | right | center | none |\n| :--- | ---: | :---: | --- |\n| text | 1 | value | data |\n",
+    );
+});
+
+test("default layout preserves Markdown code examples", async () => {
+    const input = "```markdown\n" + example + "```\n";
+    expect(await format(input)).toBe(input);
+});
+
 test.each(layouts)("%s formats the requested example", async (tableLayout) => {
     const separators = {
         fixed: "| :---: | :---: | :---: | :---: |",
@@ -276,7 +289,4 @@ test.each(["compact", "aligned"])("%s retains its existing output", async (table
             ? "|A|B|\n|:-|-:|\n|long text|2|\n"
             : await prettier.format(input, { parser: "markdown" });
     expect(await format(input, { tableLayout })).toBe(expected);
-    if (tableLayout === "compact") {
-        expect(await format(input)).toBe(expected);
-    }
 });
