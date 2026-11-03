@@ -1,4 +1,4 @@
-# prettier-plugin-compact-markdown-table
+# prettier-plugin-markdown-table-layout
 
 Prettier plugin for compact markdown tables without cell padding or alignment
 
@@ -16,21 +16,21 @@ Resolves [prettier/prettier#12074](https://github.com/prettier/prettier/issues/1
 
 ## Get Started
 
-Install the plugin alongside Prettier:
+Install this fork alongside Prettier:
 
 ```sh
 # npm
-npm install -D prettier-plugin-compact-markdown-table
+npm install -D prettier github:luuuuuqui/prettier-plugin-markdown-table-layout
 
 # pnpm
-pnpm add -D prettier-plugin-compact-markdown-table
+pnpm add -D prettier github:luuuuuqui/prettier-plugin-markdown-table-layout
 ```
 
 Add the plugin to your `.prettierrc`:
 
 ```json
 {
-  "plugins": ["prettier-plugin-compact-markdown-table"]
+  "plugins": ["prettier-plugin-markdown-table-layout"]
 }
 ```
 

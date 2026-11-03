@@ -1,5 +1,5 @@
 {
-  "name": "prettier-plugin-compact-markdown-table",
+  "name": "prettier-plugin-markdown-table-layout",
   "version": "0.1.0",
   "description": "Prettier plugin for compact markdown tables without cell padding or alignment",
   "type": "module",
@@ -24,11 +24,11 @@
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/myl7/prettier-plugin-compact-markdown-table.git"
+    "url": "git+https://github.com/luuuuuqui/prettier-plugin-markdown-table-layout.git"
   },
-  "homepage": "https://github.com/myl7/prettier-plugin-compact-markdown-table",
+  "homepage": "https://github.com/luuuuuqui/prettier-plugin-markdown-table-layout",
   "bugs": {
-    "url": "https://github.com/myl7/prettier-plugin-compact-markdown-table/issues"
+    "url": "https://github.com/luuuuuqui/prettier-plugin-markdown-table-layout/issues"
   },
   "peerDependencies": {
     "prettier": "^3.0.0"
