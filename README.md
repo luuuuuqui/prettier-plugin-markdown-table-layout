@@ -234,4 +234,6 @@ based on [myl7/prettier-plugin-compact-markdown-table](https://github.com/myl7/p
 
 Copyright (C) 2026 Yulong Ming <i@myl7.org>.
 
+Copyright (C) 2026 Lucas Duarte <luuuuuqui@proton.me>.
+
 licensed under the [Apache License, Version 2.0](LICENSE.txt).

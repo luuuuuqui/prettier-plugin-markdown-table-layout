@@ -21,7 +21,10 @@
     "prompt-engineering",
     "formatter"
   ],
-  "author": "Yulong Ming <i@myl7.org> (https://myl7.org)",
+  "author": "Lucas Duarte <luuuuuqui@proton.me> (https://github.com/luuuuuqui)",
+  "contributors": [
+    "Yulong Ming <i@myl7.org> (https://myl7.org)"
+  ],
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
