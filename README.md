@@ -79,6 +79,8 @@ choose the table formatting style:
 
 the `fixed`, `header`, and `preserve` layouts never expand separators to fit body content or add spaces to line up body rows. nonempty cells have one space on each side; empty cells contain one space in total (`| |`). all layouts print leading and trailing pipes.
 
+in `compact`, `fixed`, `header`, and `preserve`, the header defines the expected column count. extra delimiter cells are omitted, and trailing empty body cells beyond that count are removed from each row independently. cells with content are never removed, and empty cells before later content or within the header's width keep their positions. explicit empty header cells still count as columns. the `preserve` layout keeps the hyphen counts of the retained delimiters. `aligned` delegates this handling to prettier.
+
 #### fixed separators
 
 use `tableLayout: "fixed"` for uniform separator hyphen counts. `tableSeparatorLength` controls the number of hyphens in every column; it defaults to `3` and must be an integer of at least `1`. alignment colons are added to that count.
@@ -157,6 +159,42 @@ becomes:
 
 use `tableLayout: "aligned"` to delegate table formatting to prettier's standard printer, including its normal behavior for `printWidth` and `proseWrap`.
 
+### `tableFillMissingCells`
+
+boolean, default `true`. in the `compact`, `fixed`, `header`, and `preserve` layouts, append empty cells to short body rows until they have as many cells as the header. set it to `false` to leave short rows incomplete. existing cells keep their order and content, including explicit empty cells within the header's width. extra cells with content are kept; they do not change the expected column count. the removal of surplus delimiters and trailing empty cells is independent of this option. header-only tables do not gain body rows.
+
+```json
+{
+  "plugins": ["prettier-plugin-markdown-table-layout"],
+  "tableLayout": "header",
+  "tableFillMissingCells": true
+}
+```
+
+before:
+
+```md
+| actor | system |
+| :---: | :---: |
+| returns to the start |
+| | sends the notification |
+```
+
+after:
+
+```md
+| actor | system |
+| :---: | :----: |
+| returns to the start | |
+| | sends the notification |
+```
+
+this normalizes structure only. the plugin does not interpret text to choose a column or move existing content. if a system action is written in the first cell, it stays in the first cell; placing it in the system column requires a manual document edit.
+
+only rows recognized as part of a table by the selected parser are normalized. depending on the parser and prettier version, text without any pipes directly after a delimiter row can be a table row or a separate paragraph. a mismatched header and delimiter may also be rejected as a table. the plugin follows those distinctions and formats paragraphs normally.
+
+the `fixed`, `header`, and `preserve` layouts use one space in each empty cell (`| |`); `compact` uses no padding (`||`). separators keep their normal sizing and alignment rules. `aligned` ignores this option and continues to use prettier's standard table printer. ignored tables and preserved markdown/mdx code examples stay unchanged.
+
 ### `preserveMarkdownCodeBlocks`
 
 boolean, default `true`. in the `fixed`, `header`, and `preserve` layouts, keep the contents of markdown code blocks unchanged instead of formatting them as embedded documents. markdown and mdx language names, aliases such as `md` and `pandoc`, and extensions recognized by prettier are included. prettier still handles outer fences, container indentation, and line endings.
@@ -175,18 +213,21 @@ this option does not change the existing behavior of `compact` or `aligned`. blo
 
 ### cli options
 
-the same options are available from the command line:
+the same options are available from the command line. load the plugin explicitly with `--plugin` when passing its flags, so prettier recognizes them before discovering configuration files:
 
 ```sh
-prettier --table-layout fixed --table-separator-length 3 --write "**/*.md"
-prettier --table-layout header --write "**/*.md"
-prettier --table-layout preserve --write "**/*.md"
+prettier --plugin prettier-plugin-markdown-table-layout --table-layout fixed --table-separator-length 3 --write "**/*.md"
+prettier --plugin prettier-plugin-markdown-table-layout --table-layout header --write "**/*.md"
+prettier --plugin prettier-plugin-markdown-table-layout --table-layout preserve --write "**/*.md"
+prettier --plugin prettier-plugin-markdown-table-layout --table-layout header --table-fill-missing-cells --write "**/*.md"
 ```
+
+use `--no-table-fill-missing-cells` to leave short body rows incomplete.
 
 to allow formatting inside markdown code blocks:
 
 ```sh
-prettier --table-layout header --no-preserve-markdown-code-blocks --write "**/*.md"
+prettier --plugin prettier-plugin-markdown-table-layout --table-layout header --no-preserve-markdown-code-blocks --write "**/*.md"
 ```
 
 ## compatibility
@@ -200,6 +241,8 @@ the plugin uses prettier's markdown parser and printer for cell contents and the
 ### markdownlint
 
 the `fixed`, `header`, and `preserve` layouts match [`MD060` with `style: "compact"`](https://github.com/DavidAnson/markdownlint/blob/main/doc/md060.md), including its spacing rule for empty cells. the plugin's `compact` layout corresponds to markdownlint's `tight` style instead.
+
+`tableFillMissingCells` fixes short body rows reported by `MD056` by default. extra cells with content and ignored tables can still trigger that rule, and `aligned` retains prettier's normal behavior. normalizing column counts does not resolve text placed in the wrong semantic column.
 
 if `aligned_delimiter` is `true`, markdownlint also requires delimiter pipes to line up with the header pipes. the `header` layout meets this requirement when every header is at least three positions wide. shorter headers need wider separators to satisfy the minimum width. `fixed` and `preserve` do not guarantee delimiter alignment.
 
@@ -230,7 +273,7 @@ the test suite covers all five layouts, formatting stability, alignment markers,
 
 ## credits and license
 
-based on [myl7/prettier-plugin-compact-markdown-table](https://github.com/myl7/prettier-plugin-compact-markdown-table). the `compact` and `aligned` layouts retain their original behavior; this fork uses `fixed` as its default.
+based on [myl7/prettier-plugin-compact-markdown-table](https://github.com/myl7/prettier-plugin-compact-markdown-table). `compact` retains the original spacing and separator rules, and `aligned` delegates to prettier. this fork uses `fixed` as its default.
 
 Copyright (C) 2026 Yulong Ming <i@myl7.org>.
 
