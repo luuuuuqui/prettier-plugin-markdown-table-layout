@@ -18,6 +18,15 @@ function printCompactTable(path, options, print) {
         "children",
     );
 
+    if (options.tableFillMissingCells) {
+        const columnCount = contents[0].length;
+        for (const row of contents.slice(1)) {
+            while (row.length < columnCount) {
+                row.push("");
+            }
+        }
+    }
+
     const rows = [
         contents[0],
         printSeparator(node, options, contents[0]),

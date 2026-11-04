@@ -1,6 +1,6 @@
 // Executed against an installed tarball by scripts/check-package.js.
 import { test, expect } from "vitest";
-import { execFileSync } from "node:child_process";
+import { execFileSync, spawnSync } from "node:child_process";
 import { readFileSync, realpathSync } from "node:fs";
 import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
@@ -30,6 +30,30 @@ test("loads the installed plugin by name from the CLI config", () => {
         { cwd: consumer, input, encoding: "utf8" },
     );
     expect(result).toBe(expected);
+});
+
+test("fills short rows from the CLI and accepts the opt-out flag", () => {
+    const input = "| actor | system |\n| :--- | ---: |\n| returns |\n";
+    const expected = "| actor | system |\n| :--- | ---: |\n| returns | |\n";
+    const cli = join(dirname(require.resolve("prettier/package.json")), "bin/prettier.cjs");
+    const args = [
+        cli,
+        "--with-node-modules",
+        "--stdin-filepath",
+        "sample.md",
+        "--plugin",
+        "prettier-plugin-markdown-table-layout",
+    ];
+    const options = { cwd: consumer, input, encoding: "utf8" };
+    for (const [flags, output] of [
+        [[], expected],
+        [["--no-table-fill-missing-cells"], input],
+    ]) {
+        const result = spawnSync(process.execPath, [...args, ...flags], options);
+        expect(result.status).toBe(0);
+        expect(result.stderr).toBe("");
+        expect(result.stdout).toBe(output);
+    }
 });
 
 test("formats the README with the installed package", async () => {

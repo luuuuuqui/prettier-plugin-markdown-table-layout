@@ -22,6 +22,12 @@ const options = {
         description: "Number of separator hyphens per column when tableLayout is fixed.",
         range: { start: 1, end: Infinity, step: 1 },
     },
+    tableFillMissingCells: {
+        type: "boolean",
+        category: "Markdown",
+        default: true,
+        description: "Append missing trailing cells to match the header, except in aligned layout.",
+    },
     preserveMarkdownCodeBlocks: {
         type: "boolean",
         category: "Markdown",
