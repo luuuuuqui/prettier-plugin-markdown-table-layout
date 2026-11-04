@@ -1,6 +1,6 @@
 {
   "name": "prettier-plugin-markdown-table-layout",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Prettier plugin for compact and single-spaced markdown tables with configurable separators",
   "type": "module",
   "exports": "./src/index.js",
