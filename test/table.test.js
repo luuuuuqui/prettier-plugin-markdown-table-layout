@@ -127,18 +127,18 @@ test("mdx parser produces compact table", async () => {
     expect(await format(input, { parser: "mdx" })).toBe(expected);
 });
 
-test("aligned with proseWrap never and wide table triggers compaction", async () => {
+test("aligned delegates wide tables at narrow print widths to Prettier", async () => {
     const columns = Array.from({ length: 10 }, (_, i) => `Column${i}`);
     const values = Array.from({ length: 10 }, (_, i) => `Value${i}Padding`);
     const input = `| ${columns.join(" | ")} |
 | ${columns.map(() => "---").join(" | ")} |
 | ${values.join(" | ")} |
 `;
-    const result = await format(input, {
-        tableLayout: "aligned",
+    const options = {
         proseWrap: "never",
         printWidth: 40,
-    });
-    expect(result).toContain("|");
-    expect(result).not.toMatch(/\|[A-Z][a-z]+\|/);
+    };
+    expect(await format(input, { tableLayout: "aligned", ...options })).toBe(
+        await prettier.format(input, { parser: "markdown", ...options }),
+    );
 });
