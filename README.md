@@ -17,14 +17,14 @@ a prettier plugin for markdown tables that stay compact and readable. choose how
 
 ## installation
 
-install the plugin from this repository alongside prettier:
+install the plugin alongside prettier:
 
 ```sh
 # npm
-npm install -D prettier github:luuuuuqui/prettier-plugin-markdown-table-layout
+npm install -D prettier prettier-plugin-markdown-table-layout
 
 # pnpm
-pnpm add -D prettier github:luuuuuqui/prettier-plugin-markdown-table-layout
+pnpm add -D prettier prettier-plugin-markdown-table-layout
 ```
 
 ## quick start
@@ -224,7 +224,7 @@ npm run test:package -- 3
 
 the first command tests the minimum supported prettier release; the second resolves the latest release within version 3. the check also verifies the package contents, loading the plugin by name from a prettier config, and the cli output. temporary files are removed after the check.
 
-the ci workflow runs on pushes and pull requests. it checks formatting and tests with the frozen lockfile, then validates the installed package against both prettier versions. markdownlint remains a local tool and is not part of ci.
+the ci workflow runs on pushes and pull requests. it checks formatting and tests with the frozen lockfile, then validates the installed package on linux, windows, and macos against both prettier versions. markdownlint remains a local tool and is not part of ci.
 
 the test suite covers all five layouts, formatting stability, alignment markers, unicode widths, inline markdown, escaped pipes, empty cells, ignored content, nested tables, and configurable preservation of markdown code blocks. markdownlint compatibility was also checked with version 0.42.0; markdownlint is not a project dependency.
 

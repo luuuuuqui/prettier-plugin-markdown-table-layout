@@ -17,8 +17,9 @@
     "prettier-plugin",
     "markdown",
     "markdown-table",
-    "token-optimization",
-    "prompt-engineering",
+    "table-layout",
+    "markdownlint",
+    "mdx",
     "formatter"
   ],
   "author": "Lucas Duarte <luuuuuqui@proton.me> (https://github.com/luuuuuqui)",
