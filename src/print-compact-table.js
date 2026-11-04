@@ -18,9 +18,12 @@ function printCompactTable(path, options, print) {
         "children",
     );
 
-    if (options.tableFillMissingCells) {
-        const columnCount = contents[0].length;
-        for (const row of contents.slice(1)) {
+    const columnCount = contents[0].length;
+    for (const row of contents.slice(1)) {
+        while (row.length > columnCount && row[row.length - 1] === "") {
+            row.pop();
+        }
+        if (options.tableFillMissingCells) {
             while (row.length < columnCount) {
                 row.push("");
             }
@@ -44,25 +47,20 @@ function printCompactTable(path, options, print) {
 function printSeparator(node, options, headers) {
     const preservedLengths =
         options.tableLayout === "preserve" ? getSeparatorLengths(node, options.originalText) : [];
-    return node.align
-        .map((align, index) => {
-            if (options.parser !== "mdx" && index >= headers.length) {
-                return null;
-            }
-            const left = align === "center" || align === "left" ? ":" : "";
-            const right = align === "center" || align === "right" ? ":" : "";
-            let length = 1;
-            if (options.tableLayout === "fixed") {
-                length = options.tableSeparatorLength;
-            } else if (options.tableLayout === "header") {
-                const width = Math.max(3, util.getStringWidth(headers[index] ?? ""));
-                length = width - left.length - right.length;
-            } else if (options.tableLayout === "preserve") {
-                length = preservedLengths[index];
-            }
-            return `${left}${"-".repeat(length)}${right}`;
-        })
-        .filter(Boolean);
+    return node.align.slice(0, headers.length).map((align, index) => {
+        const left = align === "center" || align === "left" ? ":" : "";
+        const right = align === "center" || align === "right" ? ":" : "";
+        let length = 1;
+        if (options.tableLayout === "fixed") {
+            length = options.tableSeparatorLength;
+        } else if (options.tableLayout === "header") {
+            const width = Math.max(3, util.getStringWidth(headers[index] ?? ""));
+            length = width - left.length - right.length;
+        } else if (options.tableLayout === "preserve") {
+            length = preservedLengths[index];
+        }
+        return `${left}${"-".repeat(length)}${right}`;
+    });
 }
 
 function getSeparatorLengths(node, originalText) {
