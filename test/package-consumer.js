@@ -34,5 +34,11 @@ test("loads the installed plugin by name from the CLI config", () => {
 
 test("formats the README with the installed package", async () => {
     const input = readFileSync(join(consumer, "README.md"), "utf8");
-    expect(await prettier.format(input, { parser: "markdown", plugins: [plugin] })).toBe(input);
+    expect(
+        await prettier.format(input, {
+            parser: "markdown",
+            plugins: [plugin],
+            endOfLine: "auto",
+        }),
+    ).toBe(input);
 });

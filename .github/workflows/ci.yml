@@ -29,12 +29,13 @@ jobs:
       - run: pnpm test
 
   installed-package:
-    name: installed package / prettier ${{ matrix.prettier }}
-    runs-on: ubuntu-latest
+    name: installed package / ${{ matrix.os }} / prettier ${{ matrix.prettier }}
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 10
     strategy:
       fail-fast: false
       matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
         prettier: ["3.0.0", "3"]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
