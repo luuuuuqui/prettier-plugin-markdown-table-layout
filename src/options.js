@@ -28,6 +28,12 @@ const options = {
         default: true,
         description: "Append missing trailing cells to match the header, except in aligned layout.",
     },
+    tableRemoveOverflowAlignment: {
+        type: "boolean",
+        category: "Markdown",
+        default: true,
+        description: "Remove alignment colons that exceed the header width in header layout.",
+    },
     preserveMarkdownCodeBlocks: {
         type: "boolean",
         category: "Markdown",

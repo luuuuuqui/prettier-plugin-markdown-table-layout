@@ -56,6 +56,34 @@ test("fills short rows from the CLI and accepts the opt-out flag", () => {
     }
 });
 
+test("header accepts the overflow alignment opt-out from the CLI", () => {
+    const input = "| A | B | C |\n| :- | -: | :-: |\n";
+    const cli = join(dirname(require.resolve("prettier/package.json")), "bin/prettier.cjs");
+    for (const [flags, output] of [
+        [[], "| A | B | C |\n| - | - | - |\n"],
+        [["--no-table-remove-overflow-alignment"], input],
+    ]) {
+        const result = spawnSync(
+            process.execPath,
+            [
+                cli,
+                "--with-node-modules",
+                "--stdin-filepath",
+                "sample.md",
+                "--plugin",
+                "prettier-plugin-markdown-table-layout",
+                "--table-layout",
+                "header",
+                ...flags,
+            ],
+            { cwd: consumer, input, encoding: "utf8" },
+        );
+        expect(result.status).toBe(0);
+        expect(result.stderr).toBe("");
+        expect(result.stdout).toBe(output);
+    }
+});
+
 test("formats the README with the installed package", async () => {
     const input = readFileSync(join(consumer, "README.md"), "utf8");
     expect(

@@ -48,13 +48,22 @@ function printSeparator(node, options, headers) {
     const preservedLengths =
         options.tableLayout === "preserve" ? getSeparatorLengths(node, options.originalText) : [];
     return node.align.slice(0, headers.length).map((align, index) => {
-        const left = align === "center" || align === "left" ? ":" : "";
-        const right = align === "center" || align === "right" ? ":" : "";
+        let left = align === "center" || align === "left" ? ":" : "";
+        let right = align === "center" || align === "right" ? ":" : "";
         let length = 1;
         if (options.tableLayout === "fixed") {
             length = options.tableSeparatorLength;
         } else if (options.tableLayout === "header") {
-            const width = Math.max(3, util.getStringWidth(headers[index] ?? ""));
+            const headerWidth = util.getStringWidth(headers[index] ?? "");
+            if (
+                options.tableRemoveOverflowAlignment &&
+                left.length + right.length + 1 > headerWidth
+            ) {
+                left = "";
+                right = "";
+            }
+            const minimumWidth = left.length + right.length + 1;
+            const width = Math.max(minimumWidth, headerWidth);
             length = width - left.length - right.length;
         } else if (options.tableLayout === "preserve") {
             length = preservedLengths[index];

@@ -70,7 +70,7 @@ test.each(combinations)(
                 : "| Alpha | Beta | |\n" +
                   {
                       fixed: "| :--- | ---: | :---: |\n",
-                      header: "| :---- | ---: | :-: |\n",
+                      header: "| :---- | ---: | - |\n",
                       preserve: "| :------- | ----: | :------: |\n",
                   }[tableLayout] +
                   "| a | | |\n";

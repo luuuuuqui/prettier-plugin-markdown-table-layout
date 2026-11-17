@@ -84,12 +84,59 @@ test.each(["compact", "aligned", "header", "preserve"])(
     },
 );
 
-test("header uses at least three positions including colons", async () => {
+test.each(parsers)("header keeps at least one hyphen with short headers in %s", async (parser) => {
     const input = "| A | B | | |\n| :- | -: | :-: | - |\n| longer | data | than | headers |\n";
-    expect(await format(input, { tableLayout: "header" })).toBe(
-        "| A | B | | |\n| :-- | --: | :-: | --- |\n| longer | data | than | headers |\n",
+    expect(await format(input, { tableLayout: "header", parser })).toBe(
+        "| A | B | | |\n| - | - | - | - |\n| longer | data | than | headers |\n",
     );
 });
+
+test.each(parsers)("header matches two-position column names in %s", async (parser) => {
+    const input = "| PK | FK | ID |\n| --- | --- | :---: |\n| longer body | data | 1 |\n";
+    expect(await format(input, { tableLayout: "header", parser })).toBe(
+        "| PK | FK | ID |\n| -- | -- | -- |\n| longer body | data | 1 |\n",
+    );
+});
+
+test.each(parsers)("header can retain overflowing alignment markers in %s", async (parser) => {
+    const input = "| A | B | C | | PK | FK | ID |\n| :- | -: | :-: | :-: | :- | -: | :-: |\n";
+    expect(
+        await format(input, {
+            parser,
+            tableLayout: "header",
+            tableRemoveOverflowAlignment: false,
+        }),
+    ).toBe("| A | B | C | | PK | FK | ID |\n| :- | -: | :-: | :-: | :- | -: | :-: |\n");
+    const expected = "| A | B | C | | PK | FK | ID |\n| - | - | - | - | :- | -: | -- |\n";
+    expect(await format(input, { parser, tableLayout: "header" })).toBe(expected);
+    expect(
+        await format(input, {
+            parser,
+            tableLayout: "header",
+            tableRemoveOverflowAlignment: true,
+        }),
+    ).toBe(expected);
+});
+
+test.each(parsers)(
+    "header retains markers that fit formatted unicode headers in %s",
+    async (parser) => {
+        const input = "| é | e\u0301 | ✅ | 東京 | abc |\n| -: | :- | -: | :-: | :-: |\n";
+        expect(await format(input, { parser, tableLayout: "header" })).toBe(
+            "| é | e\u0301 | ✅ | 東京 | abc |\n| - | - | -: | :--: | :-: |\n",
+        );
+    },
+);
+
+test.each(["compact", "aligned", "fixed", "preserve"])(
+    "overflow alignment option has no effect in %s layout",
+    async (tableLayout) => {
+        const input = "| A | B | C |\n| :- | -: | :-: |\n| x | y | z |\n";
+        expect(await format(input, { tableLayout, tableRemoveOverflowAlignment: true })).toBe(
+            await format(input, { tableLayout, tableRemoveOverflowAlignment: false }),
+        );
+    },
+);
 
 test.each([
     ["Résumé", "Résumé", 6],
@@ -123,9 +170,9 @@ test.each(layouts)(
             "`` `code` ``" +
             " |\n";
         expect(await format(input, { tableLayout })).toBe(
-            String.raw`| A | B |
-| --- | --- |
-| a\|b | ` +
+            "| A | B |\n" +
+                (tableLayout === "header" ? "| - | - |\n" : "| --- | --- |\n") +
+                String.raw`| a\|b | ` +
                 "`x\\|y`" +
                 String.raw` |
 | **bold** | _italic_ |
@@ -138,7 +185,8 @@ test.each(layouts)(
 
 test.each(layouts)("%s gives empty cells one space in total", async (tableLayout) => {
     const input = "| | B |\n| --- | --- |\n| x | |\n| | |\n";
-    expect(await format(input, { tableLayout })).toBe("| | B |\n| --- | --- |\n| x | |\n| | |\n");
+    const separator = tableLayout === "header" ? "| - | - |" : "| --- | --- |";
+    expect(await format(input, { tableLayout })).toBe(`| | B |\n${separator}\n| x | |\n| | |\n`);
 });
 
 test.each(parsers)("preserve reads each table's own separator in %s", async (parser) => {
@@ -177,7 +225,10 @@ test.each([
 
 test.each(layouts)("%s supports CRLF and BOM input", async (tableLayout) => {
     const input = "\uFEFF| A | B |\r\n| --- | --- |\r\n| 1 | 2 |\r\n";
-    expect(await format(input, { tableLayout, endOfLine: "crlf" })).toBe(input);
+    const separator = tableLayout === "header" ? "| - | - |" : "| --- | --- |";
+    expect(await format(input, { tableLayout, endOfLine: "crlf" })).toBe(
+        `\uFEFF| A | B |\r\n${separator}\r\n| 1 | 2 |\r\n`,
+    );
 });
 
 test.each(layouts)("%s honors prettier-ignore and prettier-ignore ranges", async (tableLayout) => {

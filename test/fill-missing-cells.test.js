@@ -137,7 +137,7 @@ test.each(combinations)(
                 : "| | | | |\n" +
                   {
                       fixed: "| :--- | ---: | :---: | --- |\n",
-                      header: "| :-- | --: | :-: | --- |\n",
+                      header: "| - | - | - | - |\n",
                       preserve: "| :- | -: | :-: | - |\n",
                   }[tableLayout] +
                   "| café 👩🏽‍💻 **bold** a\\|b | `x\\|y` | [docs](https://example.com) | |\n";

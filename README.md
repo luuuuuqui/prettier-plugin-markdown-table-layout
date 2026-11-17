@@ -8,7 +8,7 @@ a prettier plugin for markdown tables that stay compact and readable. choose how
 - **fit character limits**: remove alignment padding to leave more room for content in documents with strict character budgets.
 - **control your separators**: use a fixed number of hyphens, match each header's width, or keep the existing hyphen counts.
 - **keep diffs focused**: in the single-spaced layouts, editing a body cell does not change the padding or separators in other rows.
-- **preserve column alignment**: keep left, center, right, and unspecified alignment in every layout.
+- **control column alignment**: preserve alignment markers, or remove them in `header` when they exceed the header width.
 - **keep your prettier workflow**: format prose and inline markdown as usual, honor `prettier-ignore`, and preserve markdown code examples by default in the single-spaced layouts.
 
 ## requirements
@@ -111,7 +111,7 @@ use `tableLayout: "header"` to size each separator to its formatted header, coun
 | 2026-11-03 | 1.0 | update documentation | team |
 ```
 
-the separator's width is `max(3, headerWidth)`, so even a short or empty header has a valid separator. depending on alignment, the minimum is `---`, `:--`, `--:`, or `:-:`.
+separators always contain at least one hyphen. by default, `tableRemoveOverflowAlignment` removes all alignment colons from a column if the colons plus one hyphen would exceed its formatted header width. otherwise, colons count toward that width. unaligned headers such as `PK` and `FK` use `--`; a one-position header uses `-`, even if it originally had alignment markers. empty headers also use `-`.
 
 header width comes from prettier's `util.getStringWidth`, measured on the formatted markdown source without surrounding cell spaces. accented letters occupy one position, combining accents do not add width, and wide characters such as cjk and emoji generally occupy two. emoji sequences follow prettier's width handling.
 
@@ -158,6 +158,40 @@ becomes:
 ```
 
 use `tableLayout: "aligned"` to delegate table formatting to prettier's standard printer, including its normal behavior for `printWidth` and `proseWrap`.
+
+### `tableRemoveOverflowAlignment`
+
+boolean, default `true`. only applies to `tableLayout: "header"`. remove a column's alignment colons when keeping them and at least one hyphen would make the separator wider than its formatted header. remove both colons for a centered column; never keep a partial alignment marker. body cell widths do not affect this decision.
+
+this changes the rendered alignment of affected columns: right and center alignment become unspecified, and explicit left alignment becomes unspecified too. markers that fit remain unchanged. removing markers is permanent in the formatted document; setting the option to `false` later does not restore them.
+
+before:
+
+```md
+| A | B | ID | name |
+| :- | -: | :-: | :---: |
+| x | y | 1 | alice |
+```
+
+after, with the default `true`:
+
+```md
+| A | B | ID | name |
+| - | - | -- | :--: |
+| x | y | 1 | alice |
+```
+
+set this option to `false` to preserve every column's alignment, allowing separators to exceed short or empty headers. the separator width then becomes `max(headerWidth, alignmentColons + 1)`, with minimum separators `-`, `:-`, `-:`, and `:-:`:
+
+```json
+{
+  "plugins": ["prettier-plugin-markdown-table-layout"],
+  "tableLayout": "header",
+  "tableRemoveOverflowAlignment": false
+}
+```
+
+this option has no effect on `compact`, `aligned`, `fixed`, or `preserve`. ignored tables and preserved markdown code blocks retain their original markers.
 
 ### `tableFillMissingCells`
 
@@ -224,6 +258,8 @@ prettier --plugin prettier-plugin-markdown-table-layout --table-layout header --
 
 use `--no-table-fill-missing-cells` to leave short body rows incomplete.
 
+use `--no-table-remove-overflow-alignment` with `--table-layout header` to keep alignment markers even when they exceed the header width.
+
 to allow formatting inside markdown code blocks:
 
 ```sh
@@ -244,7 +280,7 @@ the `fixed`, `header`, and `preserve` layouts match [`MD060` with `style: "compa
 
 `tableFillMissingCells` fixes short body rows reported by `MD056` by default. extra cells with content and ignored tables can still trigger that rule, and `aligned` retains prettier's normal behavior. normalizing column counts does not resolve text placed in the wrong semantic column.
 
-if `aligned_delimiter` is `true`, markdownlint also requires delimiter pipes to line up with the header pipes. the `header` layout meets this requirement when every header is at least three positions wide. shorter headers need wider separators to satisfy the minimum width. `fixed` and `preserve` do not guarantee delimiter alignment.
+if `aligned_delimiter` is `true`, markdownlint also requires delimiter pipes to line up with the header pipes. the `header` layout removes overflowing alignment markers by default so short, nonempty headers can match their separators. empty headers can still trigger this rule because their separator needs at least one hyphen. with `tableRemoveOverflowAlignment: false`, each header must be at least as wide as its alignment colons plus one hyphen to match. `fixed` and `preserve` do not guarantee delimiter alignment.
 
 ## development
 
